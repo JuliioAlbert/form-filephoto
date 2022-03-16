@@ -7,6 +7,7 @@ class CustomFormField extends StatelessWidget {
   final IconData? prefixIcon;
   final bool obscureText;
   final String? Function(String?)? validator;
+  final void Function(String)? onChanged;
 
   const CustomFormField({
     Key? key,
@@ -16,6 +17,7 @@ class CustomFormField extends StatelessWidget {
     this.prefixIcon,
     this.keyboardType = TextInputType.text,
     this.validator,
+    this.onChanged,
   }) : super(key: key);
 
   @override
@@ -30,6 +32,7 @@ class CustomFormField extends StatelessWidget {
         prefixIcon: prefixIcon,
       ),
       validator: validator,
+      onChanged: onChanged,
     );
   }
 }

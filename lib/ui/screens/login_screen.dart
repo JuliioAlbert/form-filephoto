@@ -43,59 +43,78 @@ class _LoginForm extends StatelessWidget {
   Widget build(BuildContext context) {
     final authBloc = BlocProvider.of<AuthBloc>(context);
 
-    return Form(
-      key: authBloc.formKey, //Form Key
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: Column(
-        children: [
-          CustomFormField(
-            keyboardType: TextInputType.emailAddress,
-            label: "Correo",
-            hintText: "correo@correo.com",
-            prefixIcon: Icons.alternate_email_rounded,
-            validator: (String? value) {
-              String pattern =
-                  r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-              final regExp = RegExp(pattern);
-              return regExp.hasMatch(value ?? '') ? null : "Email no valido";
-            },
-          ),
-          const SizedBox(height: 20),
-          CustomFormField(
-            keyboardType: TextInputType.text,
-            label: "Password",
-            hintText: "****",
-            obscureText: true,
-            prefixIcon: Icons.lock_clock_sharp,
-            validator: (value) {
-              if (value != null && value.length >= 6) {
-                return null;
-              } else {
-                return "minimo de 6";
-              }
-            },
-          ),
-          const SizedBox(height: 30),
-          MaterialButton(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            disabledColor: Colors.grey,
-            elevation: 0,
-            color: Colors.deepPurple,
-            onPressed: () {
-              authBloc.isValidForm();
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-              child: const Text(
-                "Ingresar",
-                style: TextStyle(color: Colors.white),
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        return Form(
+          key: authBloc.formKey, //Form Key
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: Column(
+            children: [
+              CustomFormField(
+                keyboardType: TextInputType.emailAddress,
+                label: "Correo",
+                hintText: "correo@correo.com",
+                prefixIcon: Icons.alternate_email_rounded,
+                validator: (String? value) {
+                  String pattern =
+                      r'^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+                  final regExp = RegExp(pattern);
+                  return regExp.hasMatch(value ?? '')
+                      ? null
+                      : "Email no valido";
+                },
+                onChanged: (value) => {},
               ),
-            ),
-          )
-        ],
-      ),
+              const SizedBox(height: 20),
+              CustomFormField(
+                keyboardType: TextInputType.text,
+                label: "Password",
+                hintText: "****",
+                obscureText: true,
+                prefixIcon: Icons.lock_clock_sharp,
+                validator: (value) {
+                  if (value != null && value.length >= 6) {
+                    return null;
+                  } else {
+                    return "minimo de 6";
+                  }
+                },
+              ),
+              const SizedBox(height: 30),
+              MaterialButton(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                disabledColor: Colors.grey,
+                elevation: 0,
+                color: Colors.deepPurple,
+                onPressed: state.isLoadingG
+                    ? null
+                    : () async {
+                        FocusScope.of(context).unfocus();
+
+                        if (!authBloc.isValidForm()) return;
+
+                        await authBloc.onLogin();
+                        Navigator.pushReplacementNamed(context, "home");
+                      },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  child: BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, state) {
+                      return Text(
+                        state.isLoadingG ? "Espere..." : "Ingresar",
+                        style: const TextStyle(color: Colors.white),
+                      );
+                    },
+                  ),
+                ),
+              )
+            ],
+          ),
+        );
+      },
     );
   }
 }
